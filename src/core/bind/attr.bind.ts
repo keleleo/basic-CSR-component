@@ -1,38 +1,57 @@
-const prefix = 'set';
-export function attrBind(el: Element, setListener: any) {
-  const els = getElementsToBind(el);
+import { ComponentBase } from '../ComponentBase';
 
-  els.forEach((e) => bind(e, setListener));
-}
+export function attrBind(root: ComponentBase) {
+  const targets = root.querySelectorAll(`[child-${root.code}]`);
 
-function bind(el: Element, setListener: any) {
-  const attrs = Array.from(el.attributes)
-    .map((a) => a.name)
-    .filter((a) => a.startsWith(prefix));
-  for (const attr of attrs) {
-    const varName = attr.replace(new RegExp('^' + prefix), '');
-    const value = el.getAttribute(attr) || '';
-    const funName = prefix + upperFistChar(varName);
-    const elIsntance = (el as any).instance;
-    if (!elIsntance || !elIsntance[funName])
-      throw new Error(funName + ' notfound');
-    const setFun = elIsntance[funName].bind(elIsntance);
-    const hasCurly =
-      (value || '').startsWith('{') && (value || '').endsWith('}');
-
-    if (!hasCurly) {
-      setFun(value);
-      return;
-    }
-
-    setListener(value.slice(1, -1), setFun);
+  for (const el of targets) {
+    if (!el.tagName.includes('-')) continue;
+    Array.from(el.attributes).forEach((attr) => {
+      const attrTarget = attr.name.replace(/[\[\]\(\)]/g, '');
+      const attrRoot = attr.value;
+      if (!isComponentBase(el)) return;
+      if (isTwoWay(attr.name)) {
+        bindSet(root, el, attrTarget, attrRoot);
+        bindGet(root, el, attrTarget, attrRoot);
+        return;
+      }
+      if (isSet(attr.name)) bindSet(root, el, attrTarget, attrRoot);
+      if (isGet(attr.name)) bindGet(root, el, attrTarget, attrRoot);
+    });
   }
 }
-function upperFistChar(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+
+function bindSet(
+  root: ComponentBase,
+  el: ComponentBase,
+  attrTarget: string,
+  attrRoot: string
+) {
+  root.addAttrListener(attrRoot, (value) => {
+    el.setAttrValue(attrTarget, value);
+  });
 }
-function getElementsToBind(el: Element) {
-  return Array.from(el.querySelectorAll('*')).filter((e) =>
-    Array.from(e.attributes).some((attr) => attr.name.startsWith(prefix))
-  );
+
+function bindGet(
+  root: ComponentBase,
+  el: ComponentBase,
+  attrTarget: string,
+  attrRoot: string
+) {
+  el.addAttrListener(attrTarget, (value) => {
+    root.setAttrValue(attrRoot, value);
+  });
+}
+
+function isGet(str: string) {
+  return str.startsWith('[') && str.endsWith(']');
+}
+function isSet(str: string) {
+  return str.startsWith('(') && str.endsWith(')');
+}
+function isTwoWay(str: string) {
+  return str.startsWith('[(') && str.endsWith(')]');
+}
+
+function isComponentBase(el: any): el is ComponentBase {
+  return el instanceof ComponentBase;
 }

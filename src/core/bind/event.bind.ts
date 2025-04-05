@@ -1,3 +1,5 @@
+import { ComponentBase } from '../ComponentBase';
+
 const eventList = [
   'click',
   'mousedown',
@@ -9,9 +11,11 @@ const eventList = [
   'mouseup',
 ];
 
-export function eventBind(el: HTMLElement, instance: any) {
+export function eventBind(root: ComponentBase, instance: any) {
   for (const name of eventList) {
-    const els = el.querySelectorAll(`[${name}]`) as NodeListOf<HTMLElement>;
+    const els = root.querySelectorAll(
+      `[child-${root.code}][${name}]`
+    ) as NodeListOf<HTMLElement>;
 
     for (const el of els) {
       const clickStr = el.getAttribute(name);
@@ -33,15 +37,13 @@ function setListener(
   funName: string,
   params: string[]
 ) {
-  const fun = instance[funName];
   target.addEventListener(event, (e) => {
-    if (!fun) {
+    if (!instance[funName]) {
       console.error('Function: ', funName, 'notfound');
-
       return;
     }
     if (params.length == 0 || (params.length == 1 && params[0] == '')) {
-      fun.bind(instance)();
+      instance[funName].bind(instance)();
       return;
     }
     const isBetweenQuotes = (str: string) => /^(['"])(.*)\1$/.test(str);
@@ -52,6 +54,6 @@ function setListener(
       if (value == '$event') return e;
       return Number(value);
     });
-    fun.bind(instance)(...processedParams);
+    instance[funName].bind(instance)(...processedParams);
   });
 }

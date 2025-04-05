@@ -1,42 +1,48 @@
 const htmlCard =
   /* html */
   `
-  <teste-title setTitle='Titlo 1' disable></teste-title>
+  <teste-title (title)='cardTitle'></teste-title>
   <br>
-  <teste-title setTitle='{cardTitle}'></teste-title>
+  <teste-input [(value)]='cardTitle'></teste-input>
 `;
 class Card {
-  cardTitle = '';
-  constructor() {
-    const t = 'Card titulo';
-    let i = 0;
-    setInterval(() => {
-      this.cardTitle += t.charAt(i);
-      i++;
-      if (i >= t.length) {
-        this.cardTitle = '';
-        i = 0;
-      }
-    }, 200);
-  }
+  cardTitle = 'Card titulo';
+  onChangeValue(attr: string, value: any) {}
 }
 export const testeCard = { html: htmlCard, component: Card, tag: 'teste-card' };
 
 const htmlTitle =
   /* html */
   `
-  <div>batata</div>
   Title: {{title}}
 `;
 class Title {
-  title = '';
+  title = 'default-title';
 
-  setTitle(value: string) {
-    this.title = value;
-  }
+  onChangeValue(attr: string, value: any) {}
 }
 export const testeTitle = {
   html: htmlTitle,
   component: Title,
   tag: 'teste-title',
+};
+
+const htmlInput =
+  /* html */
+  `
+  <div>input value:
+  <input [(value)]='value'>
+  </div>
+`;
+class TestInput {
+  value = '';
+
+  onChangeValue(attr: string, value: any) {
+    console.table({ component: 'TestInput', attr, value });
+  }
+}
+export const testeInput = {
+  html: htmlInput,
+  component: TestInput,
+  tag: 'teste-input',
 };
