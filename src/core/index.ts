@@ -10,6 +10,7 @@ export function createComp(html: string, clazz: any, name: string) {
         /<(\w+)([^>]*?)(\/?)>/g,
         `<$1$2 child-${this.code}$3>`
       );
+      this.setAttribute(`code-${this.code}`, '');
     }
     connectedCallback() {
       this.init();

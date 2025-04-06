@@ -1,7 +1,9 @@
 import { attrBind } from './bind/attr.bind';
 import { eventBind } from './bind/event.bind';
+import { forBind } from './bind/for.bind';
 import { propBind } from './bind/prop.bind';
 import { textBind } from './bind/text.bind';
+import { watchaArray } from './utils/watch-array';
 
 export class ComponentBase extends HTMLElement {
   code = '';
@@ -15,6 +17,7 @@ export class ComponentBase extends HTMLElement {
 
   init() {
     this.loadAttrNames();
+    forBind(this);
     textBind(this, this.addAttrListener.bind(this));
     eventBind(this, this.instance);
     propBind(this);
@@ -42,7 +45,10 @@ export class ComponentBase extends HTMLElement {
   }
 
   setAttrValue(attr: string, value: any) {
-    if (!this.existAttr(attr)) throw new Error('Attribute not found: ' + attr);
+    if (!this.existAttr(attr)) {
+      console.log(this);
+      throw new Error('Attribute not found: ' + attr);
+    }
     this.instance[attr] = value;
   }
 
@@ -74,6 +80,10 @@ export class ComponentBase extends HTMLElement {
     for (const key in this.instance) {
       const value = this.instance[key];
       const nKey = `#_watch_${key}`;
+      if (value instanceof Array)
+        watchaArray(value, () => {
+          this.onChangeAttrValue(key, this.instance[key]);
+        });
 
       Object.defineProperty(this.instance, nKey, {
         value: value,
@@ -81,15 +91,17 @@ export class ComponentBase extends HTMLElement {
       });
       Object.defineProperty(this.instance, key, {
         set: (newValue) => {
-          if (this.instance[nKey] == newValue) return;
+          if (this.instance[nKey] == newValue) {
+            console.log(newValue, this.instance[nKey], this);
 
-          this.instance[nKey] = newValue;
+            return;
+          }
+
           this.onChangeAttrValue(key, newValue);
-
-          if (this.instance['onChangeValue'])
-            this.instance['onChangeValue'](key, {
-              old: this.instance[nKey],
-              newValue,
+          this.instance[nKey] = newValue;
+          if (value instanceof Array)
+            watchaArray(value, () => {
+              this.onChangeAttrValue(key, this.instance[key]);
             });
         },
         get: () => this.instance[nKey],
@@ -99,6 +111,11 @@ export class ComponentBase extends HTMLElement {
 
   private onChangeAttrValue(attr: string, value: any) {
     this.callAttrListeners(attr, value);
+    if (this.instance['onChangeValue'])
+      this.instance['onChangeValue'](attr, {
+        old: this.instance[attr],
+        value,
+      });
   }
 
   private callAttrListeners(attr: string, value: any) {

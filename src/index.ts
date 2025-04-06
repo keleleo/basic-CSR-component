@@ -1,5 +1,6 @@
 import { testeCard, testeInput, testeTitle } from './components/teste-attr';
 import { testContainer, testContent } from './components/teste-attr2';
+import { testeFor, testeForItem } from './components/teste-for';
 import { testeMouse } from './components/teste-mouse';
 import { testeProp } from './components/teste-prop';
 import { createComp } from './core/index';
@@ -13,4 +14,7 @@ import { createComp } from './core/index';
 
   createComp(testContent.html, testContent.component, testContent.tag);
   createComp(testContainer.html, testContainer.component, testContainer.tag);
+
+  createComp(testeForItem.html, testeForItem.component, testeForItem.tag);
+  createComp(testeFor.html, testeFor.component, testeFor.tag);
 })();

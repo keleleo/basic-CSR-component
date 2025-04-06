@@ -5,21 +5,32 @@ export function attrBind(root: ComponentBase) {
 
   for (const el of targets) {
     if (!el.tagName.includes('-')) continue;
-    Array.from(el.attributes).forEach((attr) => {
-      const attrTarget = attr.name.replace(/[\[\]\(\)]/g, '');
-      const attrRoot = attr.value;
-      if (!isComponentBase(el)) return;
-      if (isTwoWay(attr.name)) {
-        bindSet(root, el, attrTarget, attrRoot);
-        bindGet(root, el, attrTarget, attrRoot);
-        return;
-      }
-      if (isSet(attr.name)) bindSet(root, el, attrTarget, attrRoot);
-      if (isGet(attr.name)) bindGet(root, el, attrTarget, attrRoot);
-    });
+    doAttrBind(root, el);
   }
 }
 
+export function doAttrBind(root: ComponentBase, el: Element) {
+  Array.from(el.attributes).forEach((attr) => {
+    const attrTarget = attr.name.replace(/[\[\]\(\)]/g, '');
+    const attrRoot = attr.value;
+
+    // customElements
+    //   .whenDefined(el.tagName.toLowerCase())
+    //   .then((res) => console.log(el.tagName.toLowerCase(), 'loaded'));
+
+    if (!isComponentBase(el)) {
+      return;
+    }
+
+    if (isTwoWay(attr.name)) {
+      bindSet(root, el, attrTarget, attrRoot);
+      bindGet(root, el, attrTarget, attrRoot);
+      return;
+    }
+    if (isSet(attr.name)) bindSet(root, el, attrTarget, attrRoot);
+    if (isGet(attr.name)) bindGet(root, el, attrTarget, attrRoot);
+  });
+}
 function bindSet(
   root: ComponentBase,
   el: ComponentBase,

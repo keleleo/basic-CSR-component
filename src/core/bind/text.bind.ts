@@ -1,3 +1,5 @@
+import { objValueByPath } from '../utils/objValueByPath';
+
 export function textBind(el: Element, setFuncListener: any) {
   const els = el.querySelectorAll('*');
   for (const el of els) {
@@ -14,14 +16,13 @@ export function textBind(el: Element, setFuncListener: any) {
 }
 
 function bindTextAttr(node: ChildNode, setFuncListener: any) {
-  const regex_attr = /\{\{[a-zA-Z0-9_]+\}\}(?!\S)/; //Find {{text}}
+  const regex_attr = /\{\{[a-zA-Z0-9_$.]+\}\}(?!\S)/; //Find {{text}}
   if (node.nodeType !== 3) return;
 
   const str = node.textContent;
-
   if (!str || str.trim() == '' || !regex_attr.test(str)) return;
 
-  const regex_attr_piece = /[^{}]+|\{\{[a-zA-Z0-9_]+\}\}/g;
+  const regex_attr_piece = /[^{}]+|\{\{[a-zA-Z0-9_$.]+\}\}/g;
   const parts = str.match(regex_attr_piece);
 
   if (!parts) return;
@@ -31,11 +32,12 @@ function bindTextAttr(node: ChildNode, setFuncListener: any) {
     const txtNode = document.createTextNode(part);
     nodes.push(txtNode);
     if (regex_attr.test(part)) {
-      const attr = part.replace('{{', '').replace('}}', '');
+      const attrVal = getAttr(part);
+      const attrName = attrVal.split('.')[0];
+      const path = getPath(attrVal);
       txtNode.textContent = '';
-
-      setFuncListener(attr, (value: any) => {
-        txtNode.textContent = value + '';
+      setFuncListener(attrName, (value: any) => {
+        txtNode.textContent = valueToString(value, path);
         return txtNode;
       });
     }
@@ -47,4 +49,19 @@ function bindTextAttr(node: ChildNode, setFuncListener: any) {
   });
 
   node.parentElement?.removeChild(node);
+}
+function getAttr(str: string) {
+  return str.replace('{{', '').replace('}}', '');
+}
+function getPath(str: string) {
+  const i = str.indexOf('.');
+  return i == -1 ? '' : str.slice(i + 1);
+}
+
+function valueToString(val: any, path: string) {
+  if (typeof val === 'string' || typeof val === 'number') return val.toString();
+  if (typeof val === 'object') {
+    return objValueByPath(path, val)?.toString();
+  }
+  return val;
 }
