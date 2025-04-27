@@ -1,20 +1,38 @@
-import { ComponentBase } from './ComponentBase';
+import { ComponentDef } from './@types/componentDef';
+import { Component } from './class/Component';
+import { cssPrefix } from './utils/cssPrefix';
+import { htmlParser } from './utils/htmlParser';
+import { minifyCSS } from './utils/minifyCss';
 
-export function createComp(html: string, clazz: any, name: string) {
-  class Component extends ComponentBase {
+let cachedStyle: HTMLStyleElement | undefined;
+
+export function createComponent<T>({
+  html,
+  clazz,
+  name,
+  css,
+}: ComponentDef<T>) {
+  const htmlObject = htmlParser(html);
+  if (css) setCss(css, name);
+  class ComponentImp extends Component {
     constructor() {
-      super();
+      super(name);
       this.instance = new clazz();
-      this.code = Math.random().toString().slice(4, 10);
-      this.innerHTML = html.replace(
-        /<(\w+)([^>]*?)(\/?)>/g,
-        `<$1$2 child-${this.code}$3>`
-      );
-      this.setAttribute(`code-${this.code}`, '');
+      this.initComponentBase();
+      // this.classList.add(name);
     }
     connectedCallback() {
-      this.init();
+      this.init(htmlObject);
     }
   }
-  customElements.define(name, Component);
+  customElements.define(name, ComponentImp);
+}
+
+function setCss(rawCss: string, elementName: string) {
+  if (!cachedStyle) {
+    cachedStyle = document.createElement('style');
+    document.head.appendChild(cachedStyle);
+  }
+  const css = minifyCSS(cssPrefix(elementName, rawCss));
+  cachedStyle.textContent += '\n' + css;
 }
