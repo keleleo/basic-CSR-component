@@ -11,12 +11,12 @@ type BindData = {
   atts: HtmlAttr[];
 };
 
-export class Component extends ComponentBase {
+export class Component<T> extends ComponentBase<T> {
   textListeners = new Map<string, TextListener[]>();
   elementsToBind: BindData[] = [];
 
-  constructor(componentName: string) {
-    super(componentName);
+  constructor(componentName: string, instance: T) {
+    super(componentName, instance);
   }
 
   init(htmlObject: HtmlObject) {
@@ -34,7 +34,7 @@ export class Component extends ComponentBase {
 
   private initializeTextBindings() {
     for (const att of this.textListeners.keys()) {
-      this.getObservable(att).listen((value) =>
+      this.getObservable(att as any)?.listen((value) =>
         this.callTextListener(att, value)
       );
     }

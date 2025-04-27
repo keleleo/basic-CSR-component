@@ -4,7 +4,6 @@ import { createComponent } from './core';
 
 (() => {
   createComponent(exemple1);
-
   createComponent(exemple2_2);
   createComponent(exemple2_1);
 })();

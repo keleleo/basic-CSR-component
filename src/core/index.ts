@@ -14,10 +14,9 @@ export function createComponent<T>({
 }: ComponentDef<T>) {
   const htmlObject = htmlParser(html);
   if (css) setCss(css, name);
-  class ComponentImp extends Component {
+  class ComponentImp extends Component<T> {
     constructor() {
-      super(name);
-      this.instance = new clazz();
+      super(name, new clazz());
       this.initComponentBase();
       // this.classList.add(name);
     }

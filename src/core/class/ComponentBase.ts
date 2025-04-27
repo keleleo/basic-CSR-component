@@ -1,14 +1,16 @@
 import { AttrListener } from '../@types/attrListener';
+import { ObservableKeys } from '../@types/observableKeys';
 import { Observable } from './Observable';
 
-export class ComponentBase extends HTMLElement {
+export class ComponentBase<T = any> extends HTMLElement {
   componentName: string;
   observables = new Map<string, Observable<any>>();
   attListeners = new Map<string, AttrListener[]>();
-  instance: any;
+  instance: T;
 
-  constructor(componentName: string) {
+  constructor(componentName: string, instance: T) {
     super();
+    this.instance = instance;
     this.componentName = componentName;
   }
 
@@ -26,10 +28,16 @@ export class ComponentBase extends HTMLElement {
       }
     }
   }
-
-  public getObservable(name: string): Observable<any> {
-    this.validateAttName(name);
-    return this.observables.get(name) as Observable<any>;
+  /**
+   *
+   * @param name Observables name
+   * @returns Observables from <T>
+   */
+  public getObservable<K extends ObservableKeys<T>>(
+    name: K
+  ): T[K] extends Observable<any> ? T[K] : Observable<any> {
+    this.validateAttName(name as string);
+    return this.observables.get(name as string) as T[K] & Observable<any>;
   }
 
   protected validateAttName(att: string) {
