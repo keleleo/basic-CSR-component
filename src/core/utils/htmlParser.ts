@@ -1,5 +1,6 @@
 import { BindType } from '../@types/bindType';
 import { HtmlAttr, HtmlObject, HtmlTextObject } from '../@types/htmlObject';
+
 const voidTags = new Set([
   'area',
   'base',
@@ -24,17 +25,22 @@ export function htmlParser(html: string) {
 function parseAtt(rawAttrs: string) {
   const attrs: HtmlAttr[] = [];
   let match;
-  const attrRegex = /([^\s=]+)(?:=['"]([^'"]*)['"])?/g;
+  // Retorna / como att
+  // const attrRegex = /([^\s=]+)(?:=['"]([^'"]*)['"])?/g; /
+  const attrRegex = /(?!\/)([^\s=]+)\s?(?:=\s?['"]([^'"]*)['"])?/g;
+
   while ((match = attrRegex.exec(rawAttrs)) !== null) {
     const [_, name, value] = match;
     attrs.push(generateAttObj(name, value));
   }
+
   return attrs;
 }
 function generateAttObj(name: string, value: string): HtmlAttr {
   let bindType = getBindType(name);
   const newName =
     bindType == undefined ? name : getAttInsideBind(name, bindType);
+
   if (
     (bindType == BindType.INPUT || bindType == BindType.TWOWAY) &&
     value.includes('.')

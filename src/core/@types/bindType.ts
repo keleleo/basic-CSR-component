@@ -1,13 +1,13 @@
 /**
- * @description  INPUT:[] ---- OUTPUT: () ---- TWOWAY: [()]
+ * @description  INPUT: () ---- OUTPUT: [] ---- TWOWAY: [()]
  */
 export enum BindType {
   /**
-   * @description []
+   * @description ()
    */
   INPUT = 'INPUT',
   /**
-   * @description ()
+   * @description []
    */
   OUTPUT = 'OUTPUT',
   /**

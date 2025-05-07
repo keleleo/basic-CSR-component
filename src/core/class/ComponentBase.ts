@@ -1,5 +1,6 @@
 import { AttrListener } from '../@types/attrListener';
-import { ObservableKeys } from '../@types/observableKeys';
+import { FunctionKeys } from '../@types/keys/functionKeys';
+import { ObservableKeys } from '../@types/keys/observableKeys';
 import { Observable } from './Observable';
 
 export class ComponentBase<T = any> extends HTMLElement {
@@ -23,11 +24,14 @@ export class ComponentBase<T = any> extends HTMLElement {
       const att = this.instance[attName];
       if (att instanceof Observable) {
         if (this.observables.has(attName))
-          throw new Error('Duplicated attribute name');
+          throw new Error(
+            `${attName}, Duplicated attribute name on ${this.componentName}`
+          );
         this.observables.set(attName, att);
       }
     }
   }
+
   /**
    *
    * @param name Observables name
@@ -35,13 +39,30 @@ export class ComponentBase<T = any> extends HTMLElement {
    */
   public getObservable<K extends ObservableKeys<T>>(
     name: K
-  ): T[K] extends Observable<any> ? T[K] : Observable<any> {
+  ): ObservableType<T, K> {
     this.validateAttName(name as string);
     return this.observables.get(name as string) as T[K] & Observable<any>;
   }
 
+  public getMethod<K extends FunctionKeys<T>>(name: K): Function {
+    const method = this.instance[name as keyof T];
+    if (typeof method != 'function')
+      throw new Error(this.propertyNotFoundMsg(name.toString()));
+    return method.bind(this.instance);
+  }
+
   protected validateAttName(att: string) {
     if (!this.observables.has(att))
-      throw new Error(`Att: ${att} does not exist on ${this.componentName}.`);
+      throw new Error(this.propertyNotFoundMsg(att));
+  }
+
+  private propertyNotFoundMsg(name: string) {
+    return `Property: ${name} does not exist on ${this.componentName}.`;
   }
 }
+
+type ObservableType<T, K extends keyof T> = 0 extends 1 & T
+  ? Observable<any>
+  : T[K] extends Observable<any>
+    ? T[K]
+    : Observable<any>;

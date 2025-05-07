@@ -3,10 +3,12 @@ import { TextListener } from '../@types/textListener';
 import { attFromPathAtt } from '../utils/attFromPathAtt';
 import { objValueByPath } from '../utils/objValueByPath';
 import { pathWithoutRootAtt } from '../utils/pathWithoutRootAtt';
-import { bindAtts } from './component.utils/bindAtt';
+import { customCompBindAtts } from './component.utils/customCompbindAtt';
+import { nativeCompBindAtts } from './component.utils/nativeCompBindAtt';
 import { ComponentBase } from './ComponentBase';
 
 type BindData = {
+  isCustom: boolean;
   el: HTMLElement;
   atts: HtmlAttr[];
 };
@@ -28,7 +30,8 @@ export class Component<T> extends ComponentBase<T> {
 
   private initializeBindings() {
     this.elementsToBind.forEach(({ el, atts }) => {
-      if (el instanceof ComponentBase) bindAtts(this, el, atts);
+      if (el instanceof ComponentBase) customCompBindAtts(this, el, atts);
+      else nativeCompBindAtts(this, el, atts);
     });
   }
 
@@ -69,17 +72,28 @@ export class Component<T> extends ComponentBase<T> {
   private generateElement(obj: HtmlObject): HTMLElement {
     const element = document.createElement(obj.tag);
 
-    if (!obj.isCustom)
+    if (!obj.isCustom) {
       obj.children.forEach((c) =>
         element.appendChild(this.generateElements(c))
       );
-    else this.checkForAttToBind(element, obj);
+    }
+    this.checkForAttToBind(element, obj, obj.isCustom);
+
     return element;
   }
 
-  private checkForAttToBind(element: HTMLElement, obj: HtmlObject) {
-    const atts: HtmlAttr[] = obj.attr.filter((f) => f.bindType != undefined);
-    if (atts.length) this.elementsToBind.push({ el: element, atts: atts });
+  private checkForAttToBind(
+    element: HTMLElement,
+    obj: HtmlObject,
+    isCustom: boolean
+  ) {
+    // const atts: HtmlAttr[] = obj.attr.filter((f) => f.bindType != undefined);
+    // if (atts.length)
+    this.elementsToBind.push({
+      el: element,
+      atts: obj.attr,
+      isCustom: isCustom,
+    });
   }
 
   private addTextListener(text: Text, attrPath: string) {
