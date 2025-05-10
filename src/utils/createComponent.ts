@@ -1,8 +1,8 @@
-import { ComponentDef } from './@types/componentDef';
-import { Component } from './class/Component';
-import { cssPrefix } from './utils/cssPrefix';
-import { htmlParser } from './utils/htmlParser';
-import { minifyCSS } from './utils/minifyCss';
+import { ComponentDef } from '../@types/componentDef';
+import { Component } from '../class/Component';
+import { cssPrefix } from './cssPrefix';
+import { htmlParser } from './htmlParser';
+import { minifyCSS } from './minifyCss';
 
 let cachedStyle: HTMLStyleElement | undefined;
 
