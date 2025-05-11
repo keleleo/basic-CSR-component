@@ -27,10 +27,14 @@ function parseAtt(rawAttrs: string) {
   let match;
   // Retorna / como att
   // const attrRegex = /([^\s=]+)(?:=['"]([^'"]*)['"])?/g; /
-  const attrRegex = /(?!\/)([^\s=]+)\s?(?:=\s?['"]([^'"]*)['"])?/g;
+
+  const attrRegex =
+    /((\([^\s]+\))|(\[[^\(][^\s]+[^\)]\])|(\[\([^\s]+\)\])|([a-zA-Z]+))\s?(=\s?(('([^']+)')|("([^"]+)")))?/g;
 
   while ((match = attrRegex.exec(rawAttrs)) !== null) {
-    const [_, name, value] = match;
+    const name = match[1];
+    const value = match[9] ?? match[11];
+
     attrs.push(generateAttObj(name, value));
   }
 
@@ -49,7 +53,7 @@ function generateAttObj(name: string, value: string): HtmlAttr {
     console.error(`Input attribute ${name} does not suport a path ${value}`);
   }
 
-  return { name: newName, value: value || '', bindType: bindType };
+  return { name: newName, value: value || 'true', bindType: bindType };
 }
 function parseEl(html: string, pos: number) {
   const tagOpenRegex = /^<([\w-]+)([^>]*)>/;

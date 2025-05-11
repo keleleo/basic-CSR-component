@@ -60,7 +60,6 @@ function bindTwoWay(root: ComponentBase, el: HTMLElement, att: HtmlAttr) {
     const value = listener.getValue(el);
     obs.change((prev) => {
       const nV = changeValueByPath(prev, pathWithoutRoot, value);
-      console.log(nV, value);
       return nV;
     });
   });
