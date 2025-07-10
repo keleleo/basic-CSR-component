@@ -1,13 +1,23 @@
 export class Emitter<T extends (...args: any) => void> {
-  #listeners = new Set<T>();
+  #listeners: Set<T> | undefined;
 
   listen(fun: T) {
-    this.#listeners.add(fun);
+    this.getListeners().add(fun);
+    return () => {
+      this.removeListener(fun);
+    };
   }
+
   removeListener(fun: T) {
-    this.#listeners.delete(fun);
+    this.getListeners().delete(fun);
   }
+
   emit(...args: Parameters<T>) {
-    this.#listeners.forEach((fn) => fn(...args));
+    this.getListeners().forEach((fn) => fn(...args));
+  }
+
+  private getListeners() {
+    if (this.#listeners === undefined) this.#listeners = new Set<T>();
+    return this.#listeners;
   }
 }

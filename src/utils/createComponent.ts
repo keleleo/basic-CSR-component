@@ -1,26 +1,28 @@
 import { ComponentDef } from '../@types/componentDef';
-import { Component } from '../class/Component';
+import { Component } from '../class/component/Component';
 import { cssPrefix } from './cssPrefix';
-import { htmlParser } from './htmlParser';
+import { HtmlParser } from './htmlparser/htmlParser';
 import { minifyCSS } from './minifyCss';
 
 let cachedStyle: HTMLStyleElement | undefined;
 
-export function createComponent<T>({
+export function createComponent<T extends Object>({
   html,
   clazz,
   name,
   css,
 }: ComponentDef<T>) {
-  const htmlObject = htmlParser(html);
+  const htmlObject = HtmlParser.parse(html);
   if (css) setCss(css, name);
   class ComponentImp extends Component<T> {
+    initialized = false;
     constructor() {
       super(name, new clazz());
       this.initComponentBase();
-      // this.classList.add(name);
     }
     connectedCallback() {
+      if (this.initialized) return;
+      this.initialized = true;
       this.init(htmlObject);
     }
   }

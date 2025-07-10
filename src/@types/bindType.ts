@@ -1,17 +1,26 @@
 /**
- * @description  INPUT: () ---- OUTPUT: [] ---- TWOWAY: [()]
+ * @description  INPUT: [] ---- OUTPUT: () ---- TWOWAY: [()]
  */
 export enum BindType {
+  NOBIND = 'UNBIND',
+
   /**
-   * @description ()
+   * @description [] - root -> child
    */
   INPUT = 'INPUT',
+
   /**
-   * @description []
+   * @description () - child -> root
    */
   OUTPUT = 'OUTPUT',
+
   /**
-   * @description [()]
+   * @description [()] - root <-> child
    */
   TWOWAY = 'TWOWAY',
+
+  /**
+   * @description *for
+   */
+  FOR = 'FOR',
 }

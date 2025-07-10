@@ -1,7 +1,7 @@
 export default {
   entry: ['src/index.ts'],
   // format: ['esm'],
-  format: ['esm'],
+  format: ['cjs', 'esm'],
   platform: 'neutral',
   outDir: 'dist',
   bundle: true,
